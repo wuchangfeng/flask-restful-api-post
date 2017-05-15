@@ -9,6 +9,7 @@ from flask.ext.sqlalchemy import SQLAlchemy
 from datetime import datetime
 from flask import make_response
 from flask.ext.httpauth import HTTPBasicAuth
+from flask import url_for
 
 '''
 app = Flask(__name__)
@@ -34,11 +35,13 @@ class Post(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(20))
     author = db.Column(db.String(20))
+    date = db.Column(db.DateTime,default=db.func.current_timestamp())
     content = db.Column(db.String(50))
 
-    def __init__(self,title, author,content):
-        #self.id = id
+    def __init__(self,title,author,content):
+        self.id = id
         self.title = title
+        #self.date = datetime.datetime.strptime(date, "%d%m%Y").date()
         self.author = author
         self.content = content
 
@@ -52,7 +55,9 @@ def index():
     diarys = []
     for post in posts:
         diary = {
+            'id':post.id,
             'title': post.title,
+            'date':post.date,
             'author': post.author,
             'content': post.content
         }
@@ -70,11 +75,13 @@ def get_post(id):
     if not post:
         abort(400)
     diary = {
+        'id':post.id,
         'title': post.title,
+        'date': post.date,
         'author': post.author,
         'content': post.content
     }
-    print type(post)
+    #print type(post)
     return jsonify({'post': diary})
 
 
@@ -112,6 +119,18 @@ def update_post(id):
     post.content = request.json.get('content', post.content)
     db.session.commit()
     return jsonify( { 'post': post } )
+
+
+'''
+def make_public_task(task):
+    new_task = {}
+    for field in task:
+        if field == 'id':
+            new_task['uri'] = url_for('get_task', task_id=task['id'], _external=True)
+        else:
+            new_task[field] = task[field]
+    return new_task
+'''
 
 
 '''
