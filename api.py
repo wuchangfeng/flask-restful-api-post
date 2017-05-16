@@ -35,18 +35,21 @@ class Post(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(20))
     author = db.Column(db.String(20))
-    date = db.Column(db.DateTime,default=db.func.current_timestamp())
     content = db.Column(db.String(50))
+    date = db.Column(db.DateTime)
 
-    def __init__(self,title,author,content):
-        self.id = id
+    def __init__(self,title,author,content,date=None):
+        #self.id = id
         self.title = title
-        #self.date = datetime.datetime.strptime(date, "%d%m%Y").date()
         self.author = author
         self.content = content
+        if date is None:
+            date = datetime.utcnow()
+        self.date = date
 
 
 @app.route('/api/v1.0/diary/', methods = ['GET'])
+#@auth.login_required
 def index():
     # the type of post is list
     posts = Post.query.all()
@@ -66,14 +69,14 @@ def index():
 
 
 '''
-404错误处理好
+404错误处理好 400 or 404 ?
 '''
 @app.route('/api/v1.0/diary/<int:id>/')
 def get_post(id):
     # post is a model
     post = Post.query.get(id)
     if not post:
-        abort(400)
+        abort(404)
     diary = {
         'id':post.id,
         'title': post.title,
